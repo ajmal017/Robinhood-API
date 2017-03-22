@@ -1,3 +1,10 @@
+##############
+#   Look at License to see where credit is due, This is a cloned copy of the original creator rohanpai25 with minor customizations
+#
+#
+#
+##############
+
 # Robinhood
 Python Framework to make trades with Robinhood Private API.
 See this [blog post](https://medium.com/@rohanpai25/reversing-robinhood-free-accessible-automated-stock-trading-f40fba1e7d8b).
