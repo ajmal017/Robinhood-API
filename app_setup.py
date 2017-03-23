@@ -68,13 +68,15 @@ class AppSetup():
 
 	def cleanUp(self):
 		"""Facade method for the interface """
+		print("[-] Cleaning up all passwords created ...")
 		self.removeAllPasswords()
 def test():
 	x = AppSetup()
 	import time
-	time.sleep(30)
-	
-	x.removeAllPasswords()
+	#time.sleep(30)
+	print(x.getRobinhoodUserName())
+	print(x.getRobinhoodPassword())
+	x.cleanUp()
 
 
-#test()
+test()
