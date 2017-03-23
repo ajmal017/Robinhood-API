@@ -3,6 +3,7 @@ import getpass
 import json
 import requests
 import urllib.request, urllib.parse, urllib.error
+from app_setup import AppSetup
 
 class Robinhood:
 
@@ -60,14 +61,24 @@ class Robinhood:
             "User-Agent": "Robinhood/823 (iPhone; iOS 7.1.2; Scale/2.00)"
         }
         self.session.headers = self.headers
+		#self._userData = AppSetup()
 
+		
     def login_prompt(self):
         """Prompts user for username and password and calls login()."""
         username = input("Username: ")
         password = getpass.getpass()
-        return self.login(username=username, password=password)
-
-    def login(self, username, password):
+        return self._login(username=username, password=password)
+    
+	def login(self):
+		"""
+		securly login without having the expose your password plain text, this method
+		stores the password within the keychain/ keyring of your OS, meaning its the same
+		as if you were the original owner whome logged into your computer that can view everyting
+		"""
+		self._login(self._userData.getRobinhoodUserName, self._userData.getRobinhoodPassword())
+		
+    def _login(self, username, password):
         self.username = username
         self.password = password
         data = urllib.parse.urlencode({"password" : self.password, "username" : self.username})
