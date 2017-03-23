@@ -1,4 +1,4 @@
-#import keyring.backend
+
 import keyring
 
 
@@ -79,4 +79,4 @@ def test():
 	x.cleanUp()
 
 
-test()
+#test()
