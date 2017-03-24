@@ -72,14 +72,11 @@ class Robinhood:
         username = input("Username: ")
         password = getpass.getpass()
         return self._login(username=username, password=password)
-
-    def login(self):
-        """
-        securly login without having the expose your password plain text, this method
+	def login(self):
+        """securly login without having the expose your password plain text, this method
         stores the password within the keychain/ keyring of your OS, meaning its the same
-        as if you were the original owner whome logged into your computer that can view everyting
-        """
-        self._login(self._userData.getRobinhoodUserName, self._userData.getRobinhoodPassword())
+        as if you were the original owner whome logged into your computer that can view everyting"""
+		self._login(self._userData.getRobinhoodUserName(), self._userData.getRobinhoodPassword())
 
     def _login(self, username, password):
         self.username = username
@@ -278,4 +275,4 @@ def test():
     x = Robinhood()
     x.cleanupPassword()
     
-test()
+#test()
