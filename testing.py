@@ -74,14 +74,10 @@ class Robinhood:
         return self._login(username=username, password=password)
     
     def login(self):
-        #zdfadfadf
-        print("getting username: %s" % self._userData.getRobinhoodUserName())
-        print('Gettting pasword: %s' % self._userData.getRobinhoodPassword())
-        return self._login(self._userData.getRobinhoodUserName(), self._userData.getRobinhoodPassword())
+		print("getting username: %s" % self._userData.getRobinhoodUserName())
+		print('Gettting pasword: %s' % self._userData.getRobinhoodPassword())
+        self = self._login(self._userData.getRobinhoodUserName(), self._userData.getRobinhoodPassword())
 
-    def _badAuth(self):
-        self._userData.cleanUp()
-        self._userData.reinitalize()
     def _login(self, username, password):
         self.username = username
         self.password = password
@@ -91,8 +87,7 @@ class Robinhood:
         try:
             self.auth_token = res['token']
         except KeyError:
-            self._badAuth()
-            #return False
+            return False
         self.headers['Authorization'] = 'Token '+self.auth_token
         return True
 
@@ -279,12 +274,11 @@ def test():
     
     x = Robinhood()
     print('logging in')
-    print(x.login())
-    print(x.positions())
-    print('finished')
-    x.cleanupPassword()
+	print(x.login())
+
+	x.cleanupPassword()
     
 #test()
 
-if __name__ == '__main__':
-    test()
+if '__name__' == ' __main__':
+	test()
