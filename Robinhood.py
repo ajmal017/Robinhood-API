@@ -49,6 +49,7 @@ class Robinhood:
     ##############################
 
     def __init__(self):
+        """ default constructor for the object"""
         self.session = requests.session()
         self.session.proxies = urllib.request.getproxies()
         self.headers = {
@@ -77,10 +78,8 @@ class Robinhood:
         """Facade relay method to relay a login session"""
         return self._login(self._userData.getRobinhoodUserName(), self._userData.getRobinhoodPassword())
 
-    def _badAuth(self):
-        self._userData.cleanUp()
-        self._userData.reinitalize()
     def _login(self, username, password):
+        """private method to login into robinhood"""
         self.username = username
         self.password = password
         data = urllib.parse.urlencode({"password" : self.password, "username" : self.username})
@@ -99,6 +98,7 @@ class Robinhood:
             self.login()
             #return False
         self.headers['Authorization'] = 'Token '+self.auth_token
+        print('[+] succcessfully logged in')
         return True
 
     ##############################
@@ -236,6 +236,9 @@ class Robinhood:
     # POSITIONS DATA
     ##############################
 
+    def watchlist(self):
+        return self.session.post(self.endpoints['watchlists']+'/Default/bulk_add/').json()
+    
     def positions(self):
         """Returns the user's positions data."""
         return self.session.get(self.endpoints['positions']).json()
@@ -281,14 +284,15 @@ class Robinhood:
 
 
 def test():
-    
+    import json
     x = Robinhood()
     print('logging in')
     print(x.login())
-    print(x.positions())
-    print('finished')
+    print("positions")
+    print(json.dumps(x.positions(), indent=2))
+    print('\t\twatchlist test')
+    print(json.dumps(x.watchlist(), indent=2))
     
-    x.cleanupPassword()
     
 #test()
 
