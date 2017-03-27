@@ -74,9 +74,7 @@ class Robinhood:
         return self._login(username=username, password=password)
     
     def login(self):
-        #zdfadfadf
-        print("getting username: %s" % self._userData.getRobinhoodUserName())
-        print('Gettting pasword: %s' % self._userData.getRobinhoodPassword())
+        """Facade relay method to relay a login session"""
         return self._login(self._userData.getRobinhoodUserName(), self._userData.getRobinhoodPassword())
 
     def _badAuth(self):
@@ -91,7 +89,14 @@ class Robinhood:
         try:
             self.auth_token = res['token']
         except KeyError:
-            self._badAuth()
+            print("[-] Error logging in please reenter username and password")
+            usr = str(input("Username: " ))
+            pas = str(input("password: "))
+
+            self._userData.changeUserData(usr, pas)
+
+            print("[+] relogging now.... ")
+            self.login()
             #return False
         self.headers['Authorization'] = 'Token '+self.auth_token
         return True
@@ -282,6 +287,7 @@ def test():
     print(x.login())
     print(x.positions())
     print('finished')
+    
     x.cleanupPassword()
     
 #test()

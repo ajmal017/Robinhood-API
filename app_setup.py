@@ -35,12 +35,13 @@ class AppSetup():
 
     def _getRobinhoodPassword(self, username):
         return keyring.get_password('robinhood',username)
-    def reinitalize(self):
-        """reinitalizes authentication, or redos it
-        Precondition: Must called self.cleanUp() prior to use
-        Postcondition: user is prompt to re-enter user name and password
-        """
-        self.__init__()
+    
+    def changeUserData(self,usr,password):
+        """Changes the current keychain saved user data"""
+        self.setRobinhoodUserName( usr)
+        self.setRobinhoodPassword(usr,password)
+
+
     def checkifUserExist(self):
         if keyring.get_password('rhuser','rhuser') == None:
             print('[+] please enter valid user auth data')
