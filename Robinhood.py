@@ -3,6 +3,7 @@ import getpass
 import json
 import requests
 import urllib.request, urllib.parse, urllib.error
+import app_setup
 
 class Robinhood:
 
@@ -48,6 +49,7 @@ class Robinhood:
     ##############################
 
     def __init__(self):
+        """ default constructor for the object"""
         self.session = requests.session()
         self.session.proxies = urllib.request.getproxies()
         self.headers = {
@@ -60,14 +62,24 @@ class Robinhood:
             "User-Agent": "Robinhood/823 (iPhone; iOS 7.1.2; Scale/2.00)"
         }
         self.session.headers = self.headers
+        self._userData = app_setup.AppSetup()
+
+    def cleanupPassword(self):
+        """Testing purposes"""
+        self._userData.cleanUp()
 
     def login_prompt(self):
         """Prompts user for username and password and calls login()."""
         username = input("Username: ")
         password = getpass.getpass()
-        return self.login(username=username, password=password)
+        return self._login(username=username, password=password)
+    
+    def login(self):
+        """Facade relay method to relay a login session"""
+        return self._login(self._userData.getRobinhoodUserName(), self._userData.getRobinhoodPassword())
 
-    def login(self, username, password):
+    def _login(self, username, password):
+        """private method to login into robinhood"""
         self.username = username
         self.password = password
         data = urllib.parse.urlencode({"password" : self.password, "username" : self.username})
@@ -76,12 +88,21 @@ class Robinhood:
         try:
             self.auth_token = res['token']
         except KeyError:
-            return False
+            print("[-] Error logging in please reenter username and password")
+            usr = str(input("Username: " ))
+            pas = str(input("password: "))
+
+            self._userData.changeUserData(usr, pas)
+
+            print("[+] relogging now.... ")
+            self.login()
+            #return False
         self.headers['Authorization'] = 'Token '+self.auth_token
+        print('[+] succcessfully logged in')
         return True
 
     ##############################
-    #GET DATA 
+    #GET DATA
     ##############################
 
     def investment_profile(self):
@@ -119,10 +140,10 @@ class Robinhood:
         # bounds can be 'regular' for regular hours or 'extended' for extended hours
         res = self.session.get(self.endpoints['historicals'], params={'symbols':','.join(symbol).upper(), 'interval':interval, 'span':span, 'bounds':bounds})
         return res.json()
-        
+
     def get_news(self, symbol):
         return self.session.get(self.endpoints['news']+symbol.upper()+"/").json()
-        
+
 
     def print_quote(self, stock=None):
         data = self.quote_data(stock)
@@ -161,12 +182,12 @@ class Robinhood:
 
     def last_updated_at(self, stock=None):
         return self.quote_data(stock)['updated_at'];
-    
+
     def get_account(self):
         res = self.session.get(self.endpoints['accounts'])
         res = res.json()
         return res['results'][0]
-        
+
     def get_url(self,url):
         return self.session.get(url).json()
 
@@ -204,16 +225,58 @@ class Robinhood:
 
     def market_value(self):
         return float(self.portfolios()['market_value'])
-        
+
     def order_history(self):
         return self.session.get(self.endpoints['orders']).json()
-        
+
     def dividends(self):
         return self.session.get(self.endpoints['dividends']).json()
 
     ##############################
     # POSITIONS DATA
     ##############################
+
+    def addToWatchlist(self, stock_idx):
+        stock_instrument = self.instruments(stock_idx)[0]
+        print(stock_instrument['id'])
+
+        data = 'symbols=%s' % stock_idx.upper()
+        self.session.post(self.endpoints['watchlists']+'/Default/bulk_add/', data =
+        'symbols=MRD,APPL/')
+
+        
+    def watchlist(self):
+        """Postcondition: returns a list of dictionary instrument objects with
+        """
+        #get the stock watchlist which returns an list of instruments, 
+        #assuming instruments are just stock objects 
+
+        watch_list_instruments = self.session.get(self.endpoints['watchlists']\
+        + '/Default/?cursor=$cursor').json()
+        #returns a dictonary query with cursor to next and prev
+        #access the 'results'
+        watch_list_instruments = watch_list_instruments['results']
+
+       
+        #break down all the data
+        x = list()
+        for i in watch_list_instruments:
+            x.append(self.session.get(i['instrument']).json())
+    
+        #returns x gives a list of of dictonary containig all instruments
+        return x
+
+        #go one step further, throw back an array with all indexs of watch list
+
+        #watch_list = list()
+        
+
+        
+        #return self.session.get(self.endpoints['watchlists'] \
+        #+'/Default/?cursor=$cursor').json()
+
+    def simplewl(self):
+        return self.session.get(self.endpoints['watchlists']+'Default/').json()
 
     def positions(self):
         """Returns the user's positions data."""
@@ -246,7 +309,7 @@ class Robinhood:
             quantity,
             transaction,
             instrument['symbol']
-        ) 
+        )
         res = self.session.post(self.endpoints['orders'], data=data)
         return res
 
@@ -257,3 +320,35 @@ class Robinhood:
     def place_sell_order(self, instrument, quantity, bid_price=None):
         transaction = "sell"
         return self.place_order(instrument, quantity, bid_price, transaction)
+
+    def reorganize(self):
+        return self.session.post(self.endpoints['watchlists'] +
+        '/$watchlistName/reorder/{ids}')
+    def makewl(self):
+        self.session.post(self.endpoints['watchlists'], data = 'name=DANNY')
+
+def test():
+    import json
+    x = Robinhood()
+    print('logging in')
+    print(x.login())
+    print("positions")
+
+  
+    print(json.dumps(x.positions(), indent=2))
+    print('\t\twatchlist test')
+    #print(json.dumps(x.watchlist(), indent=2))
+    
+    
+    #x.addToWatchlist('MDR') 
+    z = x.watchlist()
+    
+    #result = x['results']
+    for i in range(len(z)):
+        print('%s \t %s\n%s' % (i, z[i]['symbol'],z[i]['fundamentals']))
+    
+    #print(json.loads(x.simplewl(), indent=2))
+
+    #x.reorganize()
+if __name__ == '__main__':
+    test()

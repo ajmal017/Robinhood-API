@@ -3,7 +3,7 @@ import getpass
 import json
 import requests
 import urllib.request, urllib.parse, urllib.error
-from app_setup import AppSetup
+import app_setup
 
 class Robinhood:
 
@@ -61,23 +61,23 @@ class Robinhood:
             "User-Agent": "Robinhood/823 (iPhone; iOS 7.1.2; Scale/2.00)"
         }
         self.session.headers = self.headers
-		self._userData = AppSetup()
+        self._userData = app_setup.AppSetup()
 
-		
+    def cleanupPassword(self):
+        """Testing purposes"""
+        self._userData.cleanUp()
+
     def login_prompt(self):
         """Prompts user for username and password and calls login()."""
         username = input("Username: ")
         password = getpass.getpass()
         return self._login(username=username, password=password)
     
-	def login(self):
-		"""
-		securly login without having the expose your password plain text, this method
-		stores the password within the keychain/ keyring of your OS, meaning its the same
-		as if you were the original owner whome logged into your computer that can view everyting
-		"""
-		self._login(self._userData.getRobinhoodUserName, self._userData.getRobinhoodPassword())
-		
+    def login(self):
+		print("getting username: %s" % self._userData.getRobinhoodUserName())
+		print('Gettting pasword: %s' % self._userData.getRobinhoodPassword())
+        self = self._login(self._userData.getRobinhoodUserName(), self._userData.getRobinhoodPassword())
+
     def _login(self, username, password):
         self.username = username
         self.password = password
@@ -92,7 +92,7 @@ class Robinhood:
         return True
 
     ##############################
-    #GET DATA 
+    #GET DATA
     ##############################
 
     def investment_profile(self):
@@ -130,10 +130,10 @@ class Robinhood:
         # bounds can be 'regular' for regular hours or 'extended' for extended hours
         res = self.session.get(self.endpoints['historicals'], params={'symbols':','.join(symbol).upper(), 'interval':interval, 'span':span, 'bounds':bounds})
         return res.json()
-        
+
     def get_news(self, symbol):
         return self.session.get(self.endpoints['news']+symbol.upper()+"/").json()
-        
+
 
     def print_quote(self, stock=None):
         data = self.quote_data(stock)
@@ -172,12 +172,12 @@ class Robinhood:
 
     def last_updated_at(self, stock=None):
         return self.quote_data(stock)['updated_at'];
-    
+
     def get_account(self):
         res = self.session.get(self.endpoints['accounts'])
         res = res.json()
         return res['results'][0]
-        
+
     def get_url(self,url):
         return self.session.get(url).json()
 
@@ -215,10 +215,10 @@ class Robinhood:
 
     def market_value(self):
         return float(self.portfolios()['market_value'])
-        
+
     def order_history(self):
         return self.session.get(self.endpoints['orders']).json()
-        
+
     def dividends(self):
         return self.session.get(self.endpoints['dividends']).json()
 
@@ -257,7 +257,7 @@ class Robinhood:
             quantity,
             transaction,
             instrument['symbol']
-        ) 
+        )
         res = self.session.post(self.endpoints['orders'], data=data)
         return res
 
@@ -268,3 +268,17 @@ class Robinhood:
     def place_sell_order(self, instrument, quantity, bid_price=None):
         transaction = "sell"
         return self.place_order(instrument, quantity, bid_price, transaction)
+
+
+def test():
+    
+    x = Robinhood()
+    print('logging in')
+	print(x.login())
+
+	x.cleanupPassword()
+    
+#test()
+
+if '__name__' == ' __main__':
+	test()
