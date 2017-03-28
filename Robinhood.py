@@ -236,9 +236,48 @@ class Robinhood:
     # POSITIONS DATA
     ##############################
 
+    def addToWatchlist(self, stock_idx):
+        stock_instrument = self.instruments(stock_idx)[0]
+        print(stock_instrument['id'])
+
+        data = 'symbols=%s' % stock_idx.upper()
+        self.session.post(self.endpoints['watchlists']+'/Default/bulk_add/', data =
+        'symbols=MRD,APPL/')
+
+        
     def watchlist(self):
-        return self.session.post(self.endpoints['watchlists']+'/Default/bulk_add/').json()
+        """Postcondition: returns a list of dictionary instrument objects with
+        """
+        #get the stock watchlist which returns an list of instruments, 
+        #assuming instruments are just stock objects 
+
+        watch_list_instruments = self.session.get(self.endpoints['watchlists']\
+        + '/Default/?cursor=$cursor').json()
+        #returns a dictonary query with cursor to next and prev
+        #access the 'results'
+        watch_list_instruments = watch_list_instruments['results']
+
+       
+        #break down all the data
+        x = list()
+        for i in watch_list_instruments:
+            x.append(self.session.get(i['instrument']).json())
     
+        #returns x gives a list of of dictonary containig all instruments
+        return x
+
+        #go one step further, throw back an array with all indexs of watch list
+
+        #watch_list = list()
+        
+
+        
+        #return self.session.get(self.endpoints['watchlists'] \
+        #+'/Default/?cursor=$cursor').json()
+
+    def simplewl(self):
+        return self.session.get(self.endpoints['watchlists']+'Default/').json()
+
     def positions(self):
         """Returns the user's positions data."""
         return self.session.get(self.endpoints['positions']).json()
@@ -282,6 +321,11 @@ class Robinhood:
         transaction = "sell"
         return self.place_order(instrument, quantity, bid_price, transaction)
 
+    def reorganize(self):
+        return self.session.post(self.endpoints['watchlists'] +
+        '/$watchlistName/reorder/{ids}')
+    def makewl(self):
+        self.session.post(self.endpoints['watchlists'], data = 'name=DANNY')
 
 def test():
     import json
@@ -289,12 +333,22 @@ def test():
     print('logging in')
     print(x.login())
     print("positions")
+
+  
     print(json.dumps(x.positions(), indent=2))
     print('\t\twatchlist test')
-    print(json.dumps(x.watchlist(), indent=2))
+    #print(json.dumps(x.watchlist(), indent=2))
     
     
-#test()
+    #x.addToWatchlist('MDR') 
+    z = x.watchlist()
+    
+    #result = x['results']
+    for i in range(len(z)):
+        print('%s \t %s\n%s' % (i, z[i]['symbol'],z[i]['fundamentals']))
+    
+    #print(json.loads(x.simplewl(), indent=2))
 
+    #x.reorganize()
 if __name__ == '__main__':
     test()
