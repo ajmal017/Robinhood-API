@@ -63,6 +63,12 @@ By default, this module is written in Python 2.  For users who wish to use the m
 * User positions data
   + Securities owned
 * News
+########### 
+* added editions(RedKlouds)
+   +Keyring user data is saved via OS key authentication system
+   +get watchlist
+   +reorganize rh watchlist
+   +add to watch rh watchlist
 
 ------------------
 
