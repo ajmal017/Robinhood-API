@@ -1,9 +1,7 @@
-##############
-#   Look at License to see where credit is due, This is a cloned copy of the original creator rohanpai25 with minor customizations
-#
-#
-#
-##############
+
+>   Look at License to see where credit is due, This is a cloned copy of the original creator rohanpai25 with minor customizations
+
+
 
 # Robinhood
 Python Framework to make trades with Robinhood Private API.
@@ -15,16 +13,21 @@ See this [blog post](https://medium.com/@rohanpai25/reversing-robinhood-free-acc
 - Quote information (`Robinhood.quote_data`)
 - User portfolio data (`Robinhood.portfolios`)
 - User positions data (`Robinhood.positions`)
-- More coming soon
+* RedKloud additions
+   + Keyring user data is saved via OS key authentication system
+   + get watchlist
+   + reorganize rh watchlist
+   + add to watch rh watchlist
+ - Still developing more, as i explore
 
 ###How To Install:
     pip install -r requirements.txt
-    
+***    
 ###Converting to Python 3
 By default, this module is written in Python 2.  For users who wish to use the module in Python 3, use the following command:
     
     2to3 -w Robinhood.py
-
+***
 ###How to Use (see [example.py](https://github.com/MeheLLC/Robinhood/blob/master/example.py))
 
     from Robinhood import Robinhood
@@ -34,7 +37,7 @@ By default, this module is written in Python 2.  For users who wish to use the m
     quote_info = my_trader.quote_data("GEVO")
     buy_order = my_trader.place_buy_order(stock_instrument, 1)
     sell_order = my_trader.place_sell_order(stock_instrument, 1)
-
+***
 ###Data returned
 * Quote data
   + Ask Price
@@ -64,11 +67,7 @@ By default, this module is written in Python 2.  For users who wish to use the m
   + Securities owned
 * News
 ########### 
-* added editions(RedKlouds)
-   + Keyring user data is saved via OS key authentication system
-   + get watchlist
-   + reorganize rh watchlist
-   + add to watch rh watchlist
+
 
 ------------------
 
