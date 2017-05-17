@@ -13,7 +13,7 @@ See this [blog post](https://medium.com/@rohanpai25/reversing-robinhood-free-acc
 - Quote information (`Robinhood.quote_data`)
 - User portfolio data (`Robinhood.portfolios`)
 - User positions data (`Robinhood.positions`)
-<b>* RedKloud additions</b>
+## RedKloud additions
    + Keyring user data is saved via OS key authentication system
    + get watchlist
    + reorganize rh watchlist
