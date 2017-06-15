@@ -1,7 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-.__init__.pyi
+__init__.pyi
 .testing.py
 example.py
 # C extensions
