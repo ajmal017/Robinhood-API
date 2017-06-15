@@ -34,9 +34,22 @@ By default, this module is written in Python 2.  For users who wish to use the m
     my_trader = Robinhood()
     logged_in = my_trader.login(username="USERNAME HERE", password="PASSWORD HERE")
     stock_instrument = my_trader.instruments("GEVO")[0]
+    #get quote information of the stock
     quote_info = my_trader.quote_data("GEVO")
+    #place a buy order of the instrument stock
     buy_order = my_trader.place_buy_order(stock_instrument, 1)
+    #place a sell order of the instrument stock
     sell_order = my_trader.place_sell_order(stock_instrument, 1)
+    #add a new symbol to default watchlist, restart robinhood app to see it
+    my_trader.addToWatchlist('AMD')
+    
+    #get the current watchlist of the Robinhood account
+    watch_list = my_trader.watchlist() 
+    
+    #show watch list
+    for stock in watch_list:
+      print(stock['symbol'])
+      
 ***
 ###Data returned
 * Quote data
