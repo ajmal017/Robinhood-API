@@ -242,7 +242,7 @@ class Robinhood:
 
         data = 'symbols=%s' % stock_idx.upper()
         self.session.post(self.endpoints['watchlists']+'/Default/bulk_add/', data =
-        'symbols=MRD,APPL/')
+        data)
 
         
     def watchlist(self):
@@ -298,28 +298,76 @@ class Robinhood:
     ##############################
     #PLACE ORDER
     ##############################
+    #types:
+    #   - market
+    #   -limit
+    #   -StopLoss
+    #   -Stoplimit
 
-    def place_order(self, instrument, quantity=1, bid_price = None, transaction=None):
-        if bid_price == None:
+    def place_order(self, instrument, order_type, quantity, bid_price, transaction=None):
+        """
+            Function Description: Places an order in RH
+        """
+        if bid_price == None and order_type == None:
             bid_price = self.quote_data(instrument['symbol'])['bid_price']
-        data = 'account=%s&instrument=%s&price=%f&quantity=%d&side=%s&symbol=%s&time_in_force=gfd&trigger=immediate&type=market' % (
+            order_type = 'market'
+       
+        data =\
+        'account=%s&instrument=%s&price=%f&quantity=%d&side=%s&symbol=%s&time_in_force=gfd&trigger=immediate&type=%s' % (
             self.get_account()['url'],
             urllib.parse.unquote(instrument['url']),
             float(bid_price),
             quantity,
             transaction,
-            instrument['symbol']
+            instrument['symbol'],
+            order_type
         )
         res = self.session.post(self.endpoints['orders'], data=data)
         return res
 
-    def place_buy_order(self, instrument, quantity, bid_price=None):
-        transaction = "buy"
-        return self.place_order(instrument, quantity, bid_price, transaction)
+#######################
 
-    def place_sell_order(self, instrument, quantity, bid_price=None):
+########################
+    def place_buy_order(self, symbol, buy_type=None, bid_price = None, quantity=1):
+        """
+            Function Description: Places a buy order 
+            If there is a buyprice we make a limit buy,
+            otherwise if there isn't a buy price
+            default to market price
+
+            PRECONDITIONS: 
+                -String Stock Symbol
+                -String Buy_type
+                    - makret
+                    - limit
+                -bid_price int/float
+        """
+        stock_instrument = None
+        try:
+            #get the stock instrument
+            stock_instrument = self._makeInstrument(symbol)
+        except NameError as e:
+            
+            print(e)
+        transaction = "buy"
+        return self.place_order(stock_instrument, buy_type, quantity, bid_price, transaction)
+
+
+
+    def place_sell_order(self, symbol, sell_type=None, bid_price=None,quantity=1):
+        stock_instrument = self._makeInstrument(symbol)
         transaction = "sell"
-        return self.place_order(instrument, quantity, bid_price, transaction)
+        return self.place_order(stock_instrument, sell_type,quantity, bid_price, transaction)
+
+    def _makeInstrument(self, symbol):
+        """
+            Function Description: makes an instrument
+        """
+        #make the instrument to return, but check it first
+        ret_instrument = self.instruments(symbol)
+        if len(ret_instrument) == 0:#no symbol found throw exception
+            raise NameError("Invalid Symbol: " + symbol);
+        return ret_instrument[0]
 
     def reorganize(self):
         return self.session.post(self.endpoints['watchlists'] +
@@ -350,5 +398,29 @@ def test():
     #print(json.loads(x.simplewl(), indent=2))
 
     #x.reorganize()
+
+def watchListTest():
+    r = Robinhood()
+    r.login()
+    r.addToWatchlist('UMX')
+    r.addToWatchlist('SKLN')
+    #z = r.watchlist()
+    #for i in z:
+    #    print("%s \n" % i['symbol'])
+def testPlaceLimitOrder():
+    r = Robinhood()
+    r.login()
+    i = r.instruments("SKLN")[0]
+    #r.place_order(i,1,1.50,'buy')
+    #r.place_buy_order('SKLN','limit',bid_price=1.60)
+    r.place_sell_order('SKLN','limit',bid_price=1.50)
+    #r.place_buy_order('DCTH')
+    #r.place_buy_order('DCTH','limit',bid_price=0.04)
+    #print(r.quote_data('DCTH'))
+    #r.place_buy_order('DCTH')
+    #r.place_sell_order('DCTH','limit',bid_price=0.057)
+    r.place_sell_order('DCTH','stop loss',bid_price=0.033)
 if __name__ == '__main__':
-    test()
+    #test()
+    #watchListTest()
+    testPlaceLimitOrder()
