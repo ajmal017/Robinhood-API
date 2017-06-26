@@ -99,26 +99,14 @@ class Robinhood:
 
 
 
-        #############################
-        #      
-        #
-        #############################
     def investment_profile(self):
         self.session.get(self.endpoints['investment_profile'])
 
-        #############################
-        #   
-        #
-        #############################
     def instruments(self, stock=None):
         res = self.session.get(self.endpoints['instruments'], params={'query':stock.upper()})
         res = res.json()
         return res['results']
 
-        #############################
-        #   
-        #
-        #############################
     def getFundamentals(self, stock):
         """
             Returns a Json dictionary with the following structure
@@ -144,10 +132,6 @@ class Robinhood:
         return return_data
 
 
-        #############################
-        #   
-        #
-        #############################
     def quote_data(self, stock=None):
         # Prompt for stock if not entered
 
@@ -164,18 +148,10 @@ class Robinhood:
         except (ValueError):
             raise NameError("Invalid Symbol: " + stock);
 
-        #############################
-        #   
-        #
-        #############################
     def get_quote(self, stock=None):
         data = self.quote_data(stock)
         return data["symbol"]
 
-        #############################
-        #   
-        #
-        #############################
     def get_historical_quotes(self,symbol,interval,span,bounds='regular'):
         # Valid combination
         # interval = 5minute | 10minute + span = day, week
@@ -185,116 +161,55 @@ class Robinhood:
         res = self.session.get(self.endpoints['historicals'], params={'symbols':','.join(symbol).upper(), 'interval':interval, 'span':span, 'bounds':bounds})
         return res.json()
 
-        #############################
-        #   
-        #
-        #############################
     def get_news(self, symbol):
         return self.session.get(self.endpoints['news']+symbol.upper()+"/").json()
 
 
-        #############################
-        #   
-        #
-        #############################
     def print_quote(self, stock=None):
         data = self.quote_data(stock)
         print((data["symbol"] + ": $" + data["last_trade_price"]));
 
-        #############################
-        #   
-        #
-        #############################
     def print_quotes(self, stocks):
         for i in range(len(stocks)):
             self.print_quote(stocks[i]);
 
-        #############################
-        #   
-        #
-        #############################
     def ask_price(self, stock=None):
         return self.quote_data(stock)['ask_price'];
 
-        #############################
-        #   
-        #
-        #############################
     def ask_size(self, stock=None):
         return self.quote_data(stock)['ask_size'];
 
-        #############################
-        #   
-        #
-        #############################
     def bid_price(self, stock=None):
         return self.quote_data(stock)['bid_price'];
 
-        #############################
-        #   
-        #
-        #############################
     def bid_size(self, stock=None):
         return self.quote_data(stock)['bid_size'];
 
-        #############################
-        #   
-        #
-        #############################
     def last_trade_price(self, stock=None):
         return self.quote_data(stock)['last_trade_price'];
 
-        #############################
-        #   
-        #
-        #############################
     def previous_close(self, stock=None):
         return self.quote_data(stock)['previous_close'];
 
 
-        #############################
-        #   
-        #
-        #############################
     def previous_close_date(self, stock=None):
         return self.quote_data(stock)['previous_close_date'];
 
-        #############################
-        #   
-        #
-        #############################
     def adjusted_previous_close(self, stock=None):
         return self.quote_data(stock)['adjusted_previous_close'];
 
-        #############################
-        #   
-        #
-        #############################
     def symbol(self, stock=None):
         return self.quote_data(stock)['symbol'];
 
-        #############################
-        #   
-        #
-        #############################
     def last_updated_at(self, stock=None):
         return self.quote_data(stock)['updated_at'];
 
 
-        #############################
-        #   
-        #
-        #############################
     def get_account(self):
         res = self.session.get(self.endpoints['accounts'])
         res = res.json()
         return res['results'][0]
 
-
-        #############################
-        #   
-        #
-        #############################
     def get_url(self,url):
         return self.session.get(url).json()
 
@@ -335,16 +250,19 @@ class Robinhood:
 
     def order_history(self):
         """
+            show the orders that were placed
         """
         return self.session.get(self.endpoints['orders']).json()
 
     def dividends(self):
         """
+            return the divends stocks
         """
         return self.session.get(self.endpoints['dividends']).json()
 
     def cancelMostRecentOrder(self):
         """            
+            This fucntion will cancel the most recent order that was placed
         """
         temp_list = self.order_history()['results'][0]['cancel']
         return self.session.post(temp_list)
@@ -366,7 +284,7 @@ class Robinhood:
             pass
 
         #######################
-        #   place_buy_order
+        #   watch lists
         #       ->
         ########################
     
@@ -382,10 +300,7 @@ class Robinhood:
         #returns a dictonary query with cursor to next and prev
         #access the 'results'
 
-
         watch_list_instruments = watch_list_instruments['results']
-
-       
         #break down all the data
         x = list()
         for i in watch_list_instruments:
@@ -394,26 +309,19 @@ class Robinhood:
         #returns x gives a list of of dictonary containig all instruments
         return x
 
-        #go one step further, throw back an array with all indexs of watch list
-
-        #watch_list = list()
-        
-
-        
-        #return self.session.get(self.endpoints['watchlists'] \
-        #+'/Default/?cursor=$cursor').json()
-
-
         #######################
-        #   place_buy_order
+        #  simple watch list
         #       ->
         ########################
     def simplewl(self):
+        """
+            Returns a watch list of all the instruments
+        """
         return self.session.get(self.endpoints['watchlists']+ 'Default/' ).json()
 
 
         #######################
-        #   place_buy_order
+        #   positions
         #       ->
         ########################
     def positions(self):
@@ -423,7 +331,7 @@ class Robinhood:
 
 
         #######################
-        #   place_buy_order
+        #   stocks owned
         #       ->
         ########################
     def securities_owned(self):
@@ -508,13 +416,13 @@ class Robinhood:
         return self.place_order(stock_instrument, sell_type,quantity, bid_price, transaction)
 
         #######################
-        #   place_buy_order
+        #   _Make Instrument
         # 
         ########################
     def _makeInstrument(self, symbol):
         
         """
-            Function Description: makes an instrument
+            Function Description: makes an stock instrument
         """
         #make the instrument to return, but check it first
         ret_instrument = self.instruments(symbol)
@@ -525,7 +433,7 @@ class Robinhood:
 
 
         #######################
-        #   place_buy_order
+        #   reorganizes watch list
         #  
         ########################
 
@@ -587,7 +495,7 @@ def testPlaceLimitOrder():
     #r.place_sell_order('DCTH','limit',bid_price=0.057)
     r.place_sell_order('DCTH','stop loss',bid_price=0.033)
 if __name__ == '__main__':
-    test()
+    #test()
     #watchListTest()
-    testPlaceLimitOrder()
+    #testPlaceLimitOrder()
 
