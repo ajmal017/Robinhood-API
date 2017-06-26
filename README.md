@@ -19,6 +19,7 @@ See this [blog post](https://medium.com/@rohanpai25/reversing-robinhood-free-acc
    + reorganize rh watchlist
    + add to watch rh watchlist
    + remove the last made Order
+   + get fundamentals
   
 
 - Still developing more, as i explore
@@ -72,6 +73,10 @@ By default, this module is written in Python 2.  For users who wish to use the m
    
    #remove the last order placed
    my_trader.cancelMostRecentOrder()
+     
+   #show fundamentals for a given security
+   
+   my_trader.getFundamentals('APPL')
    
 ***
 ###Data returned
