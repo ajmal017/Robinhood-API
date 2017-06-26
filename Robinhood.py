@@ -34,15 +34,10 @@ class Robinhood:
     }
 
     session = None
-
     username = None
-
     password = None
-
     headers = None
-
     auth_token = None
-
 
     ##############################
     #Logging in and initializing
@@ -59,8 +54,9 @@ class Robinhood:
             "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
             "X-Robinhood-API-Version": "1.0.0",
             "Connection": "keep-alive",
-            "User-Agent": "Robinhood/823 (iPhone; iOS 7.1.2; Scale/2.00)"
+            "User-Agent": "Robinhood/823 (iPhone; iOS 8.1.2; Scale/2.00)"
         }
+
         self.session.headers = self.headers
         self._userData = app_setup.AppSetup()
 
@@ -77,7 +73,7 @@ class Robinhood:
     def login(self):
         """Facade relay method to relay a login session"""
         return self._login(self._userData.getRobinhoodUserName(), self._userData.getRobinhoodPassword())
-
+    
     def _login(self, username, password):
         """private method to login into robinhood"""
         self.username = username
@@ -101,20 +97,60 @@ class Robinhood:
         print('[+] succcessfully logged in')
         return True
 
-    ##############################
-    #GET DATA
-    ##############################
 
+
+        #############################
+        #      
+        #
+        #############################
     def investment_profile(self):
         self.session.get(self.endpoints['investment_profile'])
 
+        #############################
+        #   
+        #
+        #############################
     def instruments(self, stock=None):
         res = self.session.get(self.endpoints['instruments'], params={'query':stock.upper()})
         res = res.json()
         return res['results']
 
+        #############################
+        #   
+        #
+        #############################
+    def getFundamentals(self, stock):
+        """
+            Returns a Json dictionary with the following structure
+            {
+                'open':,
+                'market_cap':,
+                'average_volume':,
+                'high':,
+                'pe_ratio':,
+                'low':,
+                'high_52_weeks':,
+                'dividend_yield':,
+                'low_52_weeks':,
+                'volume':
+            }
+        """
+        price = self.quote_data(stock.upper())
+        fundamental_endpoint = 'https://api.robinhood.com/fundamentals/%s/'% \
+        stock.upper()
+        return_data = self.session.get(fundamental_endpoint).json()
+        return_data['last_trade_price'] = price['last_trade_price']
+        return_data['symbol'] = stock.upper()
+        return return_data
+
+
+        #############################
+        #   
+        #
+        #############################
     def quote_data(self, stock=None):
-        #Prompt for stock if not entered
+        # Prompt for stock if not entered
+
         if stock is None:
             stock = input("Symbol: ");
         url = str(self.endpoints['quotes']) + str(stock) + "/"
@@ -128,10 +164,18 @@ class Robinhood:
         except (ValueError):
             raise NameError("Invalid Symbol: " + stock);
 
+        #############################
+        #   
+        #
+        #############################
     def get_quote(self, stock=None):
         data = self.quote_data(stock)
         return data["symbol"]
 
+        #############################
+        #   
+        #
+        #############################
     def get_historical_quotes(self,symbol,interval,span,bounds='regular'):
         # Valid combination
         # interval = 5minute | 10minute + span = day, week
@@ -141,59 +185,122 @@ class Robinhood:
         res = self.session.get(self.endpoints['historicals'], params={'symbols':','.join(symbol).upper(), 'interval':interval, 'span':span, 'bounds':bounds})
         return res.json()
 
+        #############################
+        #   
+        #
+        #############################
     def get_news(self, symbol):
         return self.session.get(self.endpoints['news']+symbol.upper()+"/").json()
 
 
+        #############################
+        #   
+        #
+        #############################
     def print_quote(self, stock=None):
         data = self.quote_data(stock)
         print((data["symbol"] + ": $" + data["last_trade_price"]));
 
+        #############################
+        #   
+        #
+        #############################
     def print_quotes(self, stocks):
         for i in range(len(stocks)):
             self.print_quote(stocks[i]);
 
+        #############################
+        #   
+        #
+        #############################
     def ask_price(self, stock=None):
         return self.quote_data(stock)['ask_price'];
 
+        #############################
+        #   
+        #
+        #############################
     def ask_size(self, stock=None):
         return self.quote_data(stock)['ask_size'];
 
+        #############################
+        #   
+        #
+        #############################
     def bid_price(self, stock=None):
         return self.quote_data(stock)['bid_price'];
 
+        #############################
+        #   
+        #
+        #############################
     def bid_size(self, stock=None):
         return self.quote_data(stock)['bid_size'];
 
+        #############################
+        #   
+        #
+        #############################
     def last_trade_price(self, stock=None):
         return self.quote_data(stock)['last_trade_price'];
 
+        #############################
+        #   
+        #
+        #############################
     def previous_close(self, stock=None):
         return self.quote_data(stock)['previous_close'];
 
+
+        #############################
+        #   
+        #
+        #############################
     def previous_close_date(self, stock=None):
         return self.quote_data(stock)['previous_close_date'];
 
+        #############################
+        #   
+        #
+        #############################
     def adjusted_previous_close(self, stock=None):
         return self.quote_data(stock)['adjusted_previous_close'];
 
+        #############################
+        #   
+        #
+        #############################
     def symbol(self, stock=None):
         return self.quote_data(stock)['symbol'];
 
+        #############################
+        #   
+        #
+        #############################
     def last_updated_at(self, stock=None):
         return self.quote_data(stock)['updated_at'];
 
+
+        #############################
+        #   
+        #
+        #############################
     def get_account(self):
         res = self.session.get(self.endpoints['accounts'])
         res = res.json()
         return res['results'][0]
 
+
+        #############################
+        #   
+        #
+        #############################
     def get_url(self,url):
         return self.session.get(url).json()
 
-    ##############################
-    # PORTFOLIOS DATA
-    ##############################
+        ##############################
+        # PORTFOLIOS DATA
+        ##############################
 
     def portfolios(self):
         """Returns the user's portfolio data."""
@@ -227,26 +334,45 @@ class Robinhood:
         return float(self.portfolios()['market_value'])
 
     def order_history(self):
+        """
+        """
         return self.session.get(self.endpoints['orders']).json()
 
     def dividends(self):
+        """
+        """
         return self.session.get(self.endpoints['dividends']).json()
 
-    ##############################
-    # POSITIONS DATA
-    ##############################
+    def cancelMostRecentOrder(self):
+        """            
+        """
+        temp_list = self.order_history()['results'][0]['cancel']
+        return self.session.post(temp_list)
 
+
+        ###############################
+        #        Position DATA
+        ###############################
     def addToWatchlist(self, stock_idx):
-        stock_instrument = self.instruments(stock_idx)[0]
-        print(stock_instrument['id'])
+        try:
+            stock_instrument = self.instruments(stock_idx)[0]
+            print(stock_instrument['id'])
+    
 
-        data = 'symbols=%s' % stock_idx.upper()
-        self.session.post(self.endpoints['watchlists']+'/Default/bulk_add/', data =
-        data)
+            data = 'symbols=%s' % stock_idx.upper()
+            self.session.post(self.endpoints['watchlists']+'/Default/bulk_add/', data =
+            data)
+        except Exception:
+            pass
 
-        
+        #######################
+        #   place_buy_order
+        #       ->
+        ########################
+    
     def watchlist(self):
-        """Postcondition: returns a list of dictionary instrument objects with
+        """
+        Postcondition: returns a list of dictionary instrument objects with
         """
         #get the stock watchlist which returns an list of instruments, 
         #assuming instruments are just stock objects 
@@ -255,6 +381,8 @@ class Robinhood:
         + '/Default/?cursor=$cursor').json()
         #returns a dictonary query with cursor to next and prev
         #access the 'results'
+
+
         watch_list_instruments = watch_list_instruments['results']
 
        
@@ -262,7 +390,7 @@ class Robinhood:
         x = list()
         for i in watch_list_instruments:
             x.append(self.session.get(i['instrument']).json())
-    
+        
         #returns x gives a list of of dictonary containig all instruments
         return x
 
@@ -275,13 +403,29 @@ class Robinhood:
         #return self.session.get(self.endpoints['watchlists'] \
         #+'/Default/?cursor=$cursor').json()
 
-    def simplewl(self):
-        return self.session.get(self.endpoints['watchlists']+'Default/').json()
 
+        #######################
+        #   place_buy_order
+        #       ->
+        ########################
+    def simplewl(self):
+        return self.session.get(self.endpoints['watchlists']+ 'Default/' ).json()
+
+
+        #######################
+        #   place_buy_order
+        #       ->
+        ########################
     def positions(self):
         """Returns the user's positions data."""
         return self.session.get(self.endpoints['positions']).json()
 
+
+
+        #######################
+        #   place_buy_order
+        #       ->
+        ########################
     def securities_owned(self):
         """
         Returns a list of symbols of securities of which there are more
@@ -295,15 +439,17 @@ class Robinhood:
                 securities.append(self.session.get(position['instrument']).json()['symbol'])
         return securities
 
-    ##############################
-    #PLACE ORDER
-    ##############################
-    #types:
-    #   - market
-    #   -limit
-    #   -StopLoss
-    #   -Stoplimit
 
+
+        ##############################
+        #       PLACE ORDER
+        ##############################
+        #    #   types:
+        #        #   -market
+        #        #   -limit
+        #        #   -StopLoss
+        #        #   -Stoplimit
+        ##############################
     def place_order(self, instrument, order_type, quantity, bid_price, transaction=None):
         """
             Function Description: Places an order in RH
@@ -311,7 +457,7 @@ class Robinhood:
         if bid_price == None and order_type == None:
             bid_price = self.quote_data(instrument['symbol'])['bid_price']
             order_type = 'market'
-       
+             
         data =\
         'account=%s&instrument=%s&price=%f&quantity=%d&side=%s&symbol=%s&time_in_force=gfd&trigger=immediate&type=%s' % (
             self.get_account()['url'],
@@ -321,20 +467,21 @@ class Robinhood:
             transaction,
             instrument['symbol'],
             order_type
-        )
+                    )
+
         res = self.session.post(self.endpoints['orders'], data=data)
         return res
 
-#######################
-
-########################
+        #######################
+        #   place_buy_order
+        #       ->
+        ########################
     def place_buy_order(self, symbol, buy_type=None, bid_price = None, quantity=1):
         """
             Function Description: Places a buy order 
             If there is a buyprice we make a limit buy,
-            otherwise if there isn't a buy price
+             otherwise if there isn't a buy price
             default to market price
-
             PRECONDITIONS: 
                 -String Stock Symbol
                 -String Buy_type
@@ -347,19 +494,25 @@ class Robinhood:
             #get the stock instrument
             stock_instrument = self._makeInstrument(symbol)
         except NameError as e:
-            
             print(e)
         transaction = "buy"
         return self.place_order(stock_instrument, buy_type, quantity, bid_price, transaction)
 
-
-
+        #######################
+        #   place_buy_order
+        #  
+        ########################
     def place_sell_order(self, symbol, sell_type=None, bid_price=None,quantity=1):
         stock_instrument = self._makeInstrument(symbol)
         transaction = "sell"
         return self.place_order(stock_instrument, sell_type,quantity, bid_price, transaction)
 
+        #######################
+        #   place_buy_order
+        # 
+        ########################
     def _makeInstrument(self, symbol):
+        
         """
             Function Description: makes an instrument
         """
@@ -369,11 +522,24 @@ class Robinhood:
             raise NameError("Invalid Symbol: " + symbol);
         return ret_instrument[0]
 
+
+
+        #######################
+        #   place_buy_order
+        #  
+        ########################
+
     def reorganize(self):
         return self.session.post(self.endpoints['watchlists'] +
         '/$watchlistName/reorder/{ids}')
+
+        #######################
+        #   place_buy_order
+        #     
+        ########################
     def makewl(self):
-        self.session.post(self.endpoints['watchlists'], data = 'name=DANNY')
+        self.session.post(self.endpoints['watchlists'], data ='name=DANNY')
+
 
 def test():
     import json
@@ -421,6 +587,7 @@ def testPlaceLimitOrder():
     #r.place_sell_order('DCTH','limit',bid_price=0.057)
     r.place_sell_order('DCTH','stop loss',bid_price=0.033)
 if __name__ == '__main__':
-    #test()
+    test()
     #watchListTest()
     testPlaceLimitOrder()
+
