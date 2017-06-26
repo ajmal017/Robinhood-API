@@ -18,7 +18,10 @@ See this [blog post](https://medium.com/@rohanpai25/reversing-robinhood-free-acc
    + get watchlist
    + reorganize rh watchlist
    + add to watch rh watchlist
- - Still developing more, as i explore
+   + remove the last made Order
+  
+
+- Still developing more, as i explore
 
 ###How To Install:
     pip install -r requirements.txt
@@ -43,12 +46,7 @@ By default, this module is written in Python 2.  For users who wish to use the m
     
     #get quote information of the stock
     quote_info = my_trader.quote_data("GEVO")
-    
-    #place a buy order of the instrument stock
-    buy_order = my_trader.place_buy_order(stock_instrument, 1)
-    
-    #place a sell order of the instrument stock
-    sell_order = my_trader.place_sell_order(stock_instrument, 1)
+
     
     #add a new symbol to default watchlist, restart robinhood app to see it
     my_trader.addToWatchlist('AMD')
@@ -60,6 +58,21 @@ By default, this module is written in Python 2.  For users who wish to use the m
     for stock in watch_list:
       print(stock['symbol'])
       
+
+   #place an limit order
+   my_trader.place_buy_order("APPL",'limit',bid_price=140.00, quantity=200)
+   #place market order
+   my_trader.place_buy_order("APPL", quantity=200)
+   
+   #place sell limit order
+   my_trader.place_sell_order("APPL","limit",bid_price=150.00, quantity=200)
+   
+   #place a market sell order
+   my_trader.place_sell_order("APPL",quantity=200)
+   
+   #remove the last order placed
+   my_trader.cancelMostRecentOrder()
+   
 ***
 ###Data returned
 * Quote data
