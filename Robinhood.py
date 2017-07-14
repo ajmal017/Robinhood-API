@@ -4,12 +4,15 @@ import json
 import requests
 import urllib.request, urllib.parse, urllib.error
 import app_setup
-
+            
+import queue
+import threading
 class Robinhood:
 
     endpoints = {
             "login": "https://api.robinhood.com/api-token-auth/",
             "investment_profile": "https://api.robinhood.com/user/investment_profile/",
+            "logout": "https://api.robinhood.com/api-token-logout/",
             "accounts":"https://api.robinhood.com/accounts/",
             "ach_iav_auth":"https://api.robinhood.com/ach/iav/auth/",
             "ach_relationships":"https://api.robinhood.com/ach/relationships/",
@@ -30,7 +33,8 @@ class Robinhood:
             "document_requests":"https://api.robinhood.com/upload/document_requests/",
             "user":"https://api.robinhood.com/user/",
             "watchlists":"https://api.robinhood.com/watchlists/",
-            "news":"https://api.robinhood.com/midlands/news/"
+            "news":"https://api.robinhood.com/midlands/news/",
+            "movers":"https://api.robinhood.com/midlands/movers/sp500/"
     }
 
     session = None
@@ -94,8 +98,20 @@ class Robinhood:
             self.login()
             #return False
         self.headers['Authorization'] = 'Token '+self.auth_token
-        print('[+] succcessfully logged in')
+        print('[+] successfully logged in')
         return True
+
+
+    def logout(self):
+        """ log out method to log out of robinhood account """
+        try:
+           
+            self.session.post(self.endpoints['logout'])
+            print("[+] successfully logged out")
+            return True
+        except Exception as e:
+            print("ERROR %s" % e)
+            return False
 
 
 
@@ -288,7 +304,12 @@ class Robinhood:
         #       ->
         ########################
     
-    def watchlist(self):
+    def p_url(self, q, url):
+        
+        d = self.session.get(url['instrument']).json()
+        q.put(d)
+
+    def watchlist1(self):
         """
         Postcondition: returns a list of dictionary instrument objects with
         """
@@ -299,13 +320,32 @@ class Robinhood:
         + '/Default/?cursor=$cursor').json()
         #returns a dictonary query with cursor to next and prev
         #access the 'results'
+        print('starting the threading')
+        
+        q = queue.Queue()
+        watch_list_instruments = watch_list_instruments['results']
+        for u in watch_list_instruments:
+            t = threading.Thread(target=self.p_url, args=(q,u))
+            t.daemon = True
+            t.start()
+        return q
 
+
+    def watchlist(self):
+        """
+        Postcondition: returns a list of dictionary instrument objects with
+        """
+        #get the stock watchlist which returns an list of instruments, 
+        #assuming instruments are just stock objects 
+        watch_list_instruments = self.session.get(self.endpoints['watchlists']\
+        + '/Default/?cursor=$cursor').json()
+        #returns a dictonary query with cursor to next and prev
+        #access the 'results'
         watch_list_instruments = watch_list_instruments['results']
         #break down all the data
         x = list()
         for i in watch_list_instruments:
             x.append(self.session.get(i['instrument']).json())
-        
         #returns x gives a list of of dictonary containig all instruments
         return x
 
@@ -324,6 +364,20 @@ class Robinhood:
         #   positions
         #       ->
         ########################
+    def topMovers(self, direction):
+        """ 
+            Returns the top 10 out of sp500 top movers and returns a list of
+            dictionary
+        """
+        ep = "%s?direction=%s" %(self.endpoints['movers'], direction)
+        r = self.session.get(ep)
+        data = json.loads(r.text)['results']
+        #data = data['results']
+        return data
+        #for i in data:
+        #    print(i['symbol'])
+        
+        print(data[0])    
     def positions(self):
         """Returns the user's positions data."""
         return self.session.get(self.endpoints['positions']).json()
@@ -430,8 +484,6 @@ class Robinhood:
             raise NameError("Invalid Symbol: " + symbol);
         return ret_instrument[0]
 
-
-
         #######################
         #   reorganizes watch list
         #  
@@ -494,8 +546,17 @@ def testPlaceLimitOrder():
     #r.place_buy_order('DCTH')
     #r.place_sell_order('DCTH','limit',bid_price=0.057)
     r.place_sell_order('DCTH','stop loss',bid_price=0.033)
+def testLogout():
+    r = Robinhood()
+    r.login()
+    print("Logging out now..")
+    r.logout()
+def testMovers():
+    r = Robinhood()
+    r.topMovers('up')
 if __name__ == '__main__':
     #test()
     #watchListTest()
     #testPlaceLimitOrder()
-
+    #testLogout()
+    testMovers()
