@@ -7,6 +7,10 @@ example.py
 # C extensions
 *.so
 
+# PyCharm, csv files
+.idea/
+*.csv
+
 # Distribution / packaging
 .Python
 env/
